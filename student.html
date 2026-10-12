@@ -173,6 +173,12 @@ async function login() {
   if (!u) { msg('loginMsg', 'Login not recognised. Check username and password in Participants file.'); return; }
   busy = true;
   try {
+    const stSnap = await getDoc(doc(db, 'settings', 'status'));
+    if (stSnap.exists() && (stSnap.data().participants === 0 || stSnap.data().questions === 0)) {
+      msg('loginMsg', 'Admin did not Uploaded Questions and Participants');
+      busy = false;
+      return;
+    }
     const snap = await getDoc(doc(db, 'participants', encodeURIComponent(u.toLowerCase())));
     who = (snap.exists() && snap.data().password === p) ? snap.data() : null;
     if (!who) { msg('loginMsg', 'Login not recognised. Check username and password in Participants file.'); busy = false; return; }

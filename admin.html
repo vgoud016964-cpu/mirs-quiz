@@ -277,6 +277,16 @@ $('timerBtn').onclick = async () => {
   }
 };
 
+let lastStatus = '';
+async function syncStatus(q, p) {
+  const key = q + '/' + p;
+  if (key === lastStatus) return;
+  try {
+    await setDoc(doc(db, 'settings', 'status'), { questions: q, participants: p });
+    lastStatus = key;
+  } catch (e) { /* ignore */ }
+}
+
 async function refresh() {
   try {
     const [qSnap, pSnap, rSnap, tSnap, aSnap] = await Promise.all([
@@ -289,6 +299,7 @@ async function refresh() {
     const results = rSnap.docs.map(d => d.data())
       .sort((a, b) => String(b.finishedAt || '').localeCompare(String(a.finishedAt || '')));
     const totalSeconds = tSnap.exists() ? (tSnap.data().totalSeconds || 0) : 0;
+    await syncStatus(qSnap.size, pSnap.size);
 
     $('qCount').textContent = qSnap.size;
     $('sCount').textContent = pSnap.size;
