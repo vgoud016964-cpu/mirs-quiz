@@ -119,7 +119,7 @@
 
   <div class="card">
     <h2><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> 3. Temporal Constraints</h2>
-    <p>Configure session duration limits (leave zero for indefinite execution).</p>
+    <p>Configure time allowed per question (leave zero for no time limit).</p>
     <div class="timer-row">
       <label>Minutes <input id="timerMins" type="number" min="0" value="0"></label>
       <label>Seconds <input id="timerSecs" type="number" min="0" max="59" value="0"></label>
@@ -133,7 +133,7 @@
     <div class="grid" style="margin-top:16px">
       <div class="stat-card"><span>Loaded Questions</span><b id="qCount">0</b></div>
       <div class="stat-card"><span>Registered Users</span><b id="sCount">0</b></div>
-      <div class="stat-card"><span>Active Timer</span><b id="tCount">Unrestricted</b></div>
+      <div class="stat-card"><span>Time Per Question</span><b id="tCount">Unrestricted</b></div>
       <div class="stat-card"><span>Evaluations Logged</span><b id="rCount">0</b></div>
     </div>
   </div>
@@ -271,9 +271,9 @@ $('timerBtn').onclick = async () => {
 
     await setDoc(doc(db, 'settings', 'timer'), { totalSeconds });
     if (totalSeconds > 0) {
-      msg("Success: Assessment duration configured to " + mins + "m " + secs + "s.");
+      msg("Success: Per-question time configured to " + mins + "m " + secs + "s.");
     } else {
-      msg("Success: Temporal constraints removed (Unrestricted mode).");
+      msg("Success: Per-question time limit removed (Unrestricted mode).");
     }
     refresh();
   } catch (e) {

@@ -206,38 +206,49 @@ async function login() {
   index = 0;
   finished = false;
   show('quizCard');
-  startTimer();
   render();
 }
 
 function startTimer() {
-  let totalSeconds = totalSecondsCfg;
+  const totalSeconds = totalSecondsCfg;
   const timerBadge = document.getElementById('timerDisplay');
-  
+
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+
   if (!totalSeconds || totalSeconds <= 0) {
     timerBadge.style.display = 'none';
     return;
   }
-  
+
   timerBadge.style.display = 'block';
   timeLeft = totalSeconds;
-  
-  if (timerInterval) clearInterval(timerInterval);
+  const updateDisplay = () => {
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    timerBadge.textContent = '⏱️ ' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  };
+  updateDisplay();
   timerInterval = setInterval(() => {
+    timeLeft--;
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
-      alert("⏰ Time's up! Submitting your quiz automatically.");
-      finish();
+      timerInterval = null;
+      if (index < questions.length - 1) {
+        index++;
+        render();
+      } else {
+        alert("⏰ Time's up for the last question. Submitting your quiz.");
+        finish();
+      }
       return;
     }
-    timeLeft--;
-    let m = Math.floor(timeLeft / 60);
-    let s = timeLeft % 60;
-    timerBadge.textContent = '⏱️ ' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    updateDisplay();
   }, 1000);
 }
 
 function render() {
+  startTimer();
   let q = questions[index];
   counter.textContent = 'Question ' + (index + 1) + ' of ' + questions.length;
   bar.style.width = (index / questions.length * 100) + '%';
@@ -303,6 +314,40 @@ async function finish() {
 window.login = login;
 window.nextQuestion = nextQuestion;
 password.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+// Anti-cheat: discourage copying quiz content.
+document.addEventListener('copy', e => {
+  if (!document.getElementById('quizCard').classList.contains('hidden')) {
+    e.preventDefault();
+    alert('Copying quiz questions or answers is not allowed.');
+  }
+});
+document.addEventListener('cut', e => {
+  if (!document.getElementById('quizCard').classList.contains('hidden')) e.preventDefault();
+});
+document.addEventListener('contextmenu', e => {
+  if (!document.getElementById('quizCard').classList.contains('hidden')) e.preventDefault();
+});
+document.addEventListener('keydown', e => {
+  if (document.getElementById('quizCard').classList.contains('hidden')) return;
+  if ((e.ctrlKey || e.metaKey) && ['c','x','u','s','p','a'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+    if (['c','x'].includes(e.key.toLowerCase())) alert('Copying quiz questions or answers is not allowed.');
+  }
+});
+
+// Warn on the first tab switch; submit the quiz on the second switch.
+let tabSwitchCount = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'hidden' || finished || !who || document.getElementById('quizCard').classList.contains('hidden')) return;
+  tabSwitchCount++;
+  if (tabSwitchCount === 1) {
+    alert('Warning: Do not switch tabs or leave the quiz. One more tab switch will submit your quiz.');
+  } else if (tabSwitchCount >= 2) {
+    alert('You switched tabs again. Your quiz will be submitted now.');
+    finish();
+  }
+});
 </script>
 </body>
 </html>
