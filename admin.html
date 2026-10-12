@@ -78,6 +78,7 @@
     <h2 style="margin:0 0 16px;color:#111">Admin Login</h2>
     <input id="admEmail" type="email" placeholder="Email" style="width:100%;padding:10px;margin-bottom:10px;box-sizing:border-box">
     <input id="admPass" type="password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:10px;box-sizing:border-box">
+    <label style="display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14px;color:#111;cursor:pointer"><input type="checkbox" style="margin:0;cursor:pointer" onchange="document.getElementById('admPass').type=this.checked?'text':'password'"> Show password</label>
     <button id="admLoginBtn" style="width:100%;padding:10px;cursor:pointer">Sign in</button>
     <p id="admLoginMsg" style="color:#c00;font-size:14px;min-height:18px"></p>
   </div>

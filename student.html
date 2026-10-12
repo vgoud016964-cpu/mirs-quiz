@@ -84,6 +84,7 @@ footer{text-align:center;color:#64748b;font-size:13px;font-weight:700;margin:25p
     <p class="lead">Ready for quiz? Sign in with your assigned credentials.</p>
     <label class="field">Username<input id="username" autocomplete="username" placeholder="Enter Username"></label>
     <label class="field">Password<input id="password" type="password" autocomplete="current-password" placeholder="Enter password"></label>
+    <label style="display:flex;align-items:center;gap:8px;margin:2px 0 12px;font-size:14px;font-weight:700;cursor:pointer;text-align:left"><input type="checkbox" style="width:auto;margin:0;cursor:pointer" onchange="document.getElementById('password').type=this.checked?'text':'password'"> Show password</label>
     <button class="btn full" onclick="login()">🚀 Sign in & Start</button>
     <div id="loginMsg" class="msg hidden"></div>
     <p class="foot">One question at a time. Timer will start immediately.</p>
