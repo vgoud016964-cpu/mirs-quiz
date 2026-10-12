@@ -132,7 +132,7 @@ footer{text-align:center;color:#64748b;font-size:13px;font-weight:700;margin:25p
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAILJ3P6b_mAU2E4y9Rkydgc_hqQyzXGdQ",
@@ -176,6 +176,9 @@ async function login() {
     const snap = await getDoc(doc(db, 'participants', encodeURIComponent(u.toLowerCase())));
     who = (snap.exists() && snap.data().password === p) ? snap.data() : null;
     if (!who) { msg('loginMsg', 'Login not recognised. Check username and password in Participants file.'); busy = false; return; }
+
+    const doneSnap = await getDoc(doc(db, 'attempts', encodeURIComponent(u.toLowerCase())));
+    if (doneSnap.exists()) { msg('loginMsg', 'You have already completed this quiz. Please contact your instructor.'); busy = false; return; }
 
     const qSnap = await getDocs(collection(db, 'questions'));
     questions = qSnap.docs.map(d => d.data()).sort((a, b) => a.order - b.order);
@@ -277,7 +280,11 @@ async function finish() {
   percent.textContent = Math.round(score / questions.length * 100) + '% correct';
 
   try {
-    await addDoc(collection(db, 'results'), { username: who.username, score, total: questions.length, finishedAt: new Date().toISOString() });
+    const finishedAt = new Date().toISOString();
+    const batch = writeBatch(db);
+    batch.set(doc(collection(db, 'results')), { username: who.username, score, total: questions.length, finishedAt });
+    batch.set(doc(db, 'attempts', encodeURIComponent(String(who.username).toLowerCase())), { username: who.username, finishedAt });
+    await batch.commit();
     saved.textContent = 'Your result has been saved for the admin to review.';
   } catch (e) {
     saved.textContent = 'Could not save your result (' + e.message + '). Please tell your instructor your score.';

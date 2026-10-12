@@ -103,12 +103,14 @@
       <p>Import evaluation items via standardized matrix.</p>
       <input id="questionsFile" type="file" accept=".xlsx,.xls,.csv">
       <button id="questionsBtn">Upload Questions Matrix</button>
+      <button id="clearQBtn" style="background:#dc2626;margin-top:8px">Remove All Questions</button>
     </div>
     <div class="card">
       <h2><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M18 14.3c1.8.8 3 2.6 3 4.7"/></svg> 2. Participant Registry</h2>
       <p>Import candidate authentication credentials.</p>
       <input id="studentsFile" type="file" accept=".xlsx,.xls,.csv">
       <button id="studentsBtn">Import Participant Credentials</button>
+      <button id="clearPBtn" style="background:#dc2626;margin-top:8px">Remove All Participants</button>
     </div>
   </div>
 
@@ -137,6 +139,7 @@
     <h2><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM8.5 12h7M8.5 16h5"/></svg> Evaluation Metrics & Submissions</h2>
     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0 14px">
       <button id="archiveBtn" style="margin:0">Start New Quiz (Archive Results)</button>
+      <button id="printBtn" style="margin:0">Print Results</button>
       <select id="viewSel" style="font:inherit;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border-color);background:#fafbff;color:var(--text-main);max-width:100%"><option value="current">Current quiz results</option></select>
     </div>
     <div class="scroll">
@@ -192,6 +195,16 @@ function val(row, ...names) {
 }
 
 // Delete everything in a collection, then write the new items (in batches of 400)
+async function clearAttempts() {
+  const snap = await getDocs(collection(db, 'attempts'));
+  const refs = snap.docs.map(d => d.ref);
+  for (let i = 0; i < refs.length; i += 400) {
+    const batch = writeBatch(db);
+    refs.slice(i, i + 400).forEach(r => batch.delete(r));
+    await batch.commit();
+  }
+}
+
 async function replaceCollection(name, items) {
   const old = await getDocs(collection(db, name));
   const ops = [];
@@ -218,6 +231,7 @@ $('questionsBtn').onclick = async () => {
       id: String(i).padStart(4, '0'),
       data: { ...q, order: i }
     })));
+    await clearAttempts();
     msg("Success: Successfully indexed " + questions.length + " assessment items.");
     refresh();
   } catch (e) {
@@ -331,6 +345,63 @@ async function refresh() {
 
 $('viewSel').onchange = refresh;
 
+async function clearCollection(name) {
+  const snap = await getDocs(collection(db, name));
+  const refs = snap.docs.map(d => d.ref);
+  for (let i = 0; i < refs.length; i += 400) {
+    const batch = writeBatch(db);
+    refs.slice(i, i + 400).forEach(r => batch.delete(r));
+    await batch.commit();
+  }
+}
+
+$('clearQBtn').onclick = async () => {
+  if (!confirm("Remove ALL uploaded questions? Students will not be able to start a quiz until you upload new questions. Results are not deleted.")) return;
+  try {
+    msg("Removing questions...");
+    await clearCollection('questions');
+    await clearAttempts();
+    $('questionsFile').value = '';
+    msg("Success: All questions removed.");
+    refresh();
+  } catch (e) {
+    msg(e.message, true);
+  }
+};
+
+$('clearPBtn').onclick = async () => {
+  if (!confirm("Remove ALL participants? Nobody will be able to log in until you import participants again. Results are not deleted.")) return;
+  try {
+    msg("Removing participants...");
+    await clearCollection('participants');
+    await clearAttempts();
+    $('studentsFile').value = '';
+    msg("Success: All participants removed.");
+    refresh();
+  } catch (e) {
+    msg(e.message, true);
+  }
+};
+
+$('printBtn').onclick = () => {
+  const rows = [...$('resultsBody').querySelectorAll('tr')].filter(tr => tr.children.length === 4);
+  if (!rows.length) { msg("There are no results to print.", true); return; }
+  const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const sel = $('viewSel');
+  const label = sel.options[sel.selectedIndex].textContent;
+  const body = rows.map(tr => '<tr>' + [...tr.children].map(td => '<td>' + esc(td.textContent) + '</td>').join('') + '</tr>').join('');
+  const w = window.open('', '_blank');
+  if (!w) { msg("Please allow pop-ups for this page, then click Print Results again.", true); return; }
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>MIRS Quiz Desk - Results</title>'
+    + '<style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px;color:#111}h1{margin:0 0 4px;font-size:22px}p{margin:0 0 16px;color:#444}'
+    + 'table{width:100%;border-collapse:collapse}th,td{border:1px solid #444;padding:8px 10px;text-align:left;font-size:14px}th{background:#eee}</style></head><body>'
+    + '<h1>MIRS Quiz Desk - Results</h1><p>' + esc(label) + ' &nbsp;|&nbsp; Printed on ' + esc(new Date().toLocaleString()) + '</p>'
+    + '<table><thead><tr><th>Username</th><th>Achieved Score</th><th>Total Items</th><th>Timestamp</th></tr></thead><tbody>' + body + '</tbody></table></body></html>');
+  w.document.close();
+  w.focus();
+  w.print();
+};
+
 $('archiveBtn').onclick = async () => {
   try {
     const snap = await getDocs(collection(db, 'results'));
@@ -349,6 +420,7 @@ $('archiveBtn').onclick = async () => {
       refs.slice(i, i + 400).forEach(r => batch.delete(r));
       await batch.commit();
     }
+    await clearAttempts();
     $('viewSel').value = 'current';
     msg("Success: " + results.length + " result(s) archived as \"" + name.trim() + "\". Ready for a new quiz.");
     refresh();
