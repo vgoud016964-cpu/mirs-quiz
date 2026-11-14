@@ -20,13 +20,14 @@
   body{font:15px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;margin:0;min-height:100vh;color:var(--text-main);
     background:radial-gradient(circle at 100% 0,#dbeafe99,transparent 35%),radial-gradient(circle at 0 30%,#e0e7ff88,transparent 35%),var(--bg-main)}
 
-  header{padding:20px 5%;color:#fff;background:linear-gradient(120deg,var(--navy),var(--navy2) 55%,#1e3a8a);
+  header{padding:22px 5%;color:#fff;background:linear-gradient(120deg,var(--navy),var(--navy2) 55%,#1e3a8a);
     border-bottom:3px solid var(--accent);box-shadow:0 10px 30px rgba(11,18,32,.25)}
-  .header-brand{display:flex;align-items:center;justify-content:center;gap:16px;max-width:1100px;margin:0 auto;text-align:center}
-  .header-logo{width:56px;height:56px;flex:0 0 56px;background:transparent;border-radius:12px;display:grid;place-items:center;overflow:hidden}
+  .header-brand{display:flex;align-items:center;justify-content:space-between;gap:40px;max-width:1300px;margin:0 auto}
+  .header-logo{width:68px;height:68px;flex:0 0 68px;background:#fff;border-radius:14px;display:grid;place-items:center;overflow:hidden;border:1px solid #ffffff44;box-shadow:0 4px 12px rgba(0,0,0,.25);padding:4px}
   .header-logo img{display:block;width:100%;height:100%;object-fit:contain}
-  .header-title-area h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.4px;color:#fff}
-  .header-title-area p{margin:2px 0 0;color:#9fb0cf;font-size:13px;letter-spacing:.2px;font-weight:500}
+  .header-title-area{flex:1;text-align:center;padding:0 10px}
+  .header-title-area h1{margin:0;font-size:27px;font-weight:700;letter-spacing:-.4px;color:#fff;white-space:nowrap}
+  .header-title-area p{margin:4px 0 0;color:#9fb0cf;font-size:13px;letter-spacing:.2px;font-weight:500}
 
   .wrap{max-width:1100px;margin:28px auto 44px;padding:0 20px}
   .card{background:var(--card-bg);padding:24px 28px;border-radius:var(--radius);margin:20px 0;box-shadow:var(--shadow);border:1px solid var(--border-color)}
@@ -65,7 +66,7 @@
   tbody tr:nth-child(even) td{background:#f9fafe}
   tbody tr:hover td{background:#eef4ff}
   tbody tr:last-child td{border-bottom:0}
-  @media(max-width:600px){.header-title-area h1{font-size:18px}.card{padding:18px}}
+  @media(max-width:900px){.header-brand{flex-direction:column;gap:14px}.header-title-area h1{font-size:21px;white-space:normal}.card{padding:18px}}
   .ico{flex:0 0 20px;color:#2563eb}
   .btn-ico{color:#fff;margin-right:8px;vertical-align:-4px}
   button{display:inline-flex;align-items:center;justify-content:center}
@@ -85,12 +86,12 @@
 
 <header>
   <div class="header-brand">
-    <div class="header-logo" title="First Among Equals"><img src="logo-removebg-preview.png" alt="First Among Equals logo"></div>
+    <div class="header-logo" title="First Among Equals"><img src="logo.png" alt="First Among Equals logo"></div>
     <div class="header-title-area">
       <h1>Montessori Indus Residential School</h1>
       <p>QuizDesk • Admin Portal</p>
     </div>
-    <div class="header-logo" title="Montessori Golden Jubilee"><img src="icon-512-removebg-preview.jpg" alt="Montessori Golden Jubilee logo"></div>
+    <div class="header-logo" title="Montessori Golden Jubilee"><img src="icon-512.png" alt="Montessori Golden Jubilee logo"></div>
   </div>
 </header>
 <main class="wrap">
@@ -452,7 +453,7 @@ $('removeArchiveBtn').onclick = async () => {
     msg("Archived results removed.");
     refresh();
   } catch (e) {
-    msg("Remove failed: " + e.message, true);
+    msg("Remove failed: " + e.message, title);
   }
 };
 
