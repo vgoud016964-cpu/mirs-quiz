@@ -5,243 +5,471 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>QuizDesk • Admin Portal</title>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<meta name="robots" content="index, follow">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
+:root{
+--navy:#0b1220; --navy2:#16213a; --accent:#2563eb; --accent2:#4f46e5; --accent-hover:#1d4ed8;
+--bg-main:#f3f5fb; --card-bg:#fff; --text-main:#334155; --text-muted:#64748b; --primary:#0f172a;
+--border-color:#e2e8f0; --radius:16px;
+--shadow:0 1px 2px rgba(15,23,42,.04),0 10px 30px -10px rgba(15,23,42,.12);
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f1f5f9;color:#0f172a;padding-bottom:40px}
-.school-brand{display:flex;align-items:center;justify-content:space-between;padding:15px 5%;background:linear-gradient(110deg,#0f172a,#1e293b);color:#fff}
-.school-brand img{width:70px;height:70px;background:#fff;border-radius:12px;padding:4px;object-fit:contain}
-.school-brand h1{margin:0;font-size:24px;text-align:center}
-.school-brand p{margin:2px 0 0;font-size:13px;color:#cbd5e1;text-align:center}
-main{width:min(1100px,95%);margin:30px auto}
-.card{background:#fff;border-radius:16px;padding:25px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.05)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px}
-h2{margin:0 0 10px;font-size:20px;color:#1e293b;display:flex;align-items:center;gap:8px}
-p.lead{margin:0 0 15px;color:#64748b;font-size:14px}
-input[type="file"]{margin-bottom:15px;display:block;width:100%;padding:10px;border:1px dashed #cbd5e1;border-radius:8px}
-input[type="text"]{margin-bottom:15px;display:block;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px}
-button{padding:10px 20px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;color:#fff;font-size:14px;background:#4f46e5;margin-right:10px}
-button:hover{opacity:0.9}
-button.danger{background:#dc2626}
-.status{margin-bottom:20px;padding:15px;background:#e0f2fe;border-left:4px solid #0284c7;border-radius:8px;font-weight:bold}
-.stat-row{display:flex;gap:20px;margin-top:15px}
-.stat{background:#f8fafc;padding:15px;border-radius:8px;flex:1;text-align:center;border:1px solid #e2e8f0}
-.stat span{display:block;font-size:24px;font-weight:900;color:#4f46e5}
-.stat p{margin:5px 0 0;font-size:12px;color:#64748b;text-transform:uppercase}
-table{width:100%;border-collapse:collapse;margin-top:15px}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:14px}
-th{background:#f8fafc;color:#475569;font-weight:bold}
+body{font:15px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;margin:0;min-height:100vh;color:var(--text-main);
+background:radial-gradient(circle at 100% 0,#dbeafe99,transparent 35%),radial-gradient(circle at 0 30%,#e0e7ff88,transparent 35%),var(--bg-main)}
+
+header{padding:22px 5%;color:#fff;background:linear-gradient(120deg,var(--navy),var(--navy2) 55%,#1e3a8a);
+border-bottom:3px solid var(--accent);box-shadow:0 10px 30px rgba(11,18,32,.25)}
+.header-brand{display:flex;align-items:center;justify-content:space-between;gap:40px;max-width:1300px;margin:0 auto}
+.header-logo{width:68px;height:68px;flex:0 0 68px;background:#fff;border-radius:14px;display:grid;place-items:center;overflow:hidden;border:1px solid #ffffff44;box-shadow:0 4px 12px rgba(0,0,0,.25);padding:4px}
+.header-logo img{display:block;width:100%;height:100%;object-fit:contain}
+.header-title-area{flex:1;text-align:center;padding:0 10px}
+.header-title-area h1{margin:0;font-size:27px;font-weight:700;letter-spacing:-.4px;color:#fff;white-space:nowrap}
+.header-title-area p{margin:4px 0 0;color:#9fb0cf;font-size:13px;letter-spacing:.2px;font-weight:500}
+
+.wrap{max-width:1100px;margin:28px auto 44px;padding:0 20px}
+.card{background:var(--card-bg);padding:24px 28px;border-radius:var(--radius);margin:20px 0;box-shadow:var(--shadow);border:1px solid var(--border-color)}
+.card h2{margin:0 0 6px;font-size:18px;font-weight:650;color:var(--primary);display:flex;align-items:center;gap:10px;letter-spacing:-.2px}
+.card p{color:var(--text-muted);font-size:14px;margin:0 0 16px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.grid[style]{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.grid>.card{margin:0;display:flex;flex-direction:column}
+.grid>.card button{margin-top:auto;align-self:flex-start}
+
+input[type=file],input[type=number],input[type=email],input[type=password]{font:inherit;padding:11px 14px;border-radius:10px;margin:6px 0 16px;display:block;width:100%;border:1.5px solid var(--border-color);background:#fafbff;color:var(--text-main);transition:border-color .15s,box-shadow .15s}
+input[type=file]{border-style:dashed;cursor:pointer;background:#f8faff}
+input[type=file]::file-selector-button{margin-right:12px;border:0;border-radius:8px;padding:8px 14px;background:#e0e7ff;color:#3730a3;font-weight:650;cursor:pointer}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+
+button{font:inherit;padding:11px 22px;border-radius:10px;margin:6px 0;border:0;color:#fff;font-weight:650;cursor:pointer;
+background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 6px 16px -4px rgba(37,99,235,.45);transition:transform .15s,box-shadow .15s,filter .15s}
+button:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 10px 20px -4px rgba(37,99,235,.5)}
+button:active{transform:scale(.98)}
+
+.status{padding:14px 18px;background:#eff6ff;border:1px solid #bfdbfe;border-left:4px solid var(--accent);border-radius:10px;white-space:pre-wrap;font-size:14px;font-weight:550;color:#1e3a8a}
+.bad{background:#fef2f2;border-color:#fecaca;border-left-color:#dc2626;color:#991b1b}
+
+.timer-row{display:flex;gap:16px;flex-wrap:wrap}
+.timer-row label{flex:1;min-width:150px;font-size:13px;font-weight:650;color:var(--text-muted)}
+
+.stat-card{background:linear-gradient(180deg,#fff,#f5f8ff);border:1px solid var(--border-color);border-top:3px solid var(--accent);border-radius:12px;padding:18px 16px;text-align:center}
+.stat-card span{display:block;font-size:12px;font-weight:650;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.stat-card b{font-size:26px;color:var(--primary);font-weight:700;letter-spacing:-.5px}
+
+.scroll{overflow-x:auto;border:1px solid var(--border-color);border-radius:12px}
+table{width:100%;border-collapse:collapse}
+td,th{text-align:left;padding:13px 16px;border-bottom:1px solid var(--border-color);font-size:14px}
+th{font-weight:650;color:#fff;background:linear-gradient(120deg,var(--navy),var(--navy2));font-size:12px;text-transform:uppercase;letter-spacing:.7px}
+tbody tr:nth-child(even) td{background:#f9fafe}
+tbody tr:hover td{background:#eef4ff}
+tbody tr:last-child td{border-bottom:0}
+@media(max-width:900px){.header-brand{flex-direction:column;gap:14px}.header-title-area h1{font-size:21px;white-space:normal}.card{padding:18px}}
+.ico{flex:0 0 20px;color:#2563eb}
+.btn-ico{color:#fff;margin-right:8px;vertical-align:-4px}
+button{display:inline-flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
+<div id="loginOverlay" style="position:fixed;inset:0;background:#0b1220;z-index:9999;display:flex;align-items:center;justify-content:center;font-family:sans-serif">
+<div style="background:#fff;padding:28px;border-radius:12px;width:320px;max-width:90%">
+<h2 style="margin:0 0 16px;color:#111">Admin Login</h2>
+<input id="admEmail" type="email" placeholder="Email" style="width:100%;padding:10px;margin-bottom:10px;box-sizing:border-box">
+<input id="admPass" type="password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:10px;box-sizing:border-box">
+<label style="display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:14px;color:#111;cursor:pointer"><input type="checkbox" style="margin:0;cursor:pointer" onchange="document.getElementById('admPass').type=this.checked?'text':'password'"> Show password</label>
+<button id="admLoginBtn" style="width:100%;padding:10px;cursor:pointer">Sign in</button>
+<p id="admLoginMsg" style="color:#c00;font-size:14px;min-height:18px"></p>
+</div>
+</div>
+
 <header>
-  <div class="school-brand">
-    <a href="https://github.com/vgoud016964-cpu/mirs-quiz/blob/main/logo.png" target="_blank"><img src="logo.png" alt="Logo"></a>
-    <div>
-      <h1>Montessori Indus Residential School</h1>
-      <p>QuizDesk • Admin Portal</p>
-    </div>
-    <a href="https://github.com/vgoud016964-cpu/mirs-quiz/blob/main/icon-111.png" target="_blank"><img src="icon-111.png" alt="Logo"></a>
-  </div>
+<div class="header-brand">
+<div class="header-logo" title="First Among Equals"><img src="logo.png" alt="First Among Equals logo"></div>
+<div class="header-title-area">
+<h1>Montessori Indus Residential School</h1>
+<p>QuizDesk • Admin Portal</p>
+</div>
+<div class="header-logo" title="Montessori Golden Jubilee"><img src="icon-512.png" alt="Montessori Golden Jubilee logo"></div>
+</div>
 </header>
-<main>
-  <div class="card">
-    <div id="mainMsg" class="status">System operational. Ready for deployment configuration.</div>
-  </div>
-  <div class="grid">
-    <div class="card">
-      <h2>1. Assessment Repository</h2>
-      <p class="lead">Import evaluation items via standardized matrix.</p>
-      <label style="font-weight:bold; margin-bottom:5px; display:block; font-size:14px;">Test Name (e.g., Class10_Physics):</label>
-      <input type="text" id="testIdInput" placeholder="Type Test Name here...">
-      <input id="questionsFile" type="file" accept=".xlsx,.xls,.csv">
-      <button id="questionsBtn">Upload Questions Matrix</button>
-    </div>
-    <div class="card">
-      <h2>2. Participant Registry</h2>
-      <p class="lead">Import candidate authentication credentials.</p>
-      <label style="font-weight:bold; margin-bottom:5px; display:block; font-size:14px;">Test Name (for Participants):</label>
-      <input type="text" id="testIdParticipants" placeholder="Type Test Name here...">
-      <input id="studentsFile" type="file" accept=".xlsx,.xls,.csv">
-      <button id="studentsBtn">Import Participant Credentials</button>
-    </div>
-  </div>
-  <div class="card">
-    <h2>3. Temporal Constraints</h2>
-    <p class="lead">Configure time allowed per question (leave zero for no time limit).</p>
-    <div class="stat-row">
-      <div class="stat"><input id="timerMins" type="number" min="0" value="0" style="text-align:center;font-size:20px;width:100%"><p>Minutes</p></div>
-      <div class="stat"><input id="timerSecs" type="number" min="0" max="59" value="0" style="text-align:center;font-size:20px;width:100%"><p>Seconds</p></div>
-    </div>
-    <button id="timerBtn" style="margin-top:15px">Commit Timer Configuration</button>
-  </div>
-  <div class="card">
-    <h2>Analytics & Telemetry</h2>
-    <div class="stat-row">
-      <div class="stat"><span id="statQ">0</span><p>Loaded Questions</p></div>
-      <div class="stat"><span id="statU">0</span><p>Registered Users</p></div>
-      <div class="stat"><span id="statT">0</span><p>Evaluations Logged</p></div>
-    </div>
-  </div>
-  <div class="card">
-    <h2>Evaluation Metrics & Submissions</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Achieved Score</th>
-          <th>Total Items</th>
-          <th>Timestamp</th>
-        </tr>
-      </thead>
-      <tbody id="resultsTable">
-        <tr><td colspan="4" style="text-align:center;color:#64748b;">Enter a Test Name to see results.</td></tr>
-      </tbody>
-    </table>
-  </div>
+<main class="wrap">
+<div class="card">
+<div id="mainMsg" class="status">System operational. Ready for deployment configuration.</div>
+</div>
+
+<div class="grid">
+<div class="card">
+<h2><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> 1. Assessment Repository</h2>
+<p>Import evaluation items via standardized matrix.</p>
+<input id="questionsFile" type="file" accept=".xlsx,.xls,.csv">
+<button id="questionsBtn">Upload Questions Matrix</button>
+<button id="clearQBtn" style="background:#dc2626;margin-top:8px">Remove All Questions</button>
+</div>
+<div class="card">
+<h2><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M18 14.3c1.8.8 3 2.6 3 4.7"/></svg> 2. Participant Registry</h2>
+<p>Import candidate authentication credentials.</p>
+<input id="studentsFile" type="file" accept=".xlsx,.xls,.csv">
+<button id="studentsBtn">Import Participant Credentials</button>
+<button id="clearPBtn" style="background:#dc2626;margin-top:8px">Remove All Participants</button>
+</div>
+</div>
+
+<div class="card">
+<h2><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg> 3. Temporal Constraints</h2>
+<p>Configure time allowed per question (leave zero for no time limit).</p>
+<div class="timer-row">
+<label>Minutes <input id="timerMins" type="number" min="0" value="0"></label>
+<label>Seconds <input id="timerSecs" type="number" min="0" max="59" value="0"></label>
+</div>
+<button id="timerBtn">Commit Timer Configuration</button>
+</div>
+
+<div class="card">
+<h2><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4M4 20h16"/><rect x="7.5" y="11" width="3" height="6" rx=".6"/><rect x="12.5" y="7" width="3" height="10" rx=".6"/><rect x="17.5" y="13" width="2.5" height="4" rx=".6"/></svg> Analytics & Telemetry</h2>
+<button id="refreshBtn"><svg class="ico btn-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.5-4.4L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.4L20 16M20 20v-4h-4"/></svg>Synchronize Metrics</button>
+<div class="grid" style="margin-top:16px">
+<div class="stat-card"><span>Loaded Questions</span><b id="qCount">0</b></div>
+<div class="stat-card"><span>Registered Users</span><b id="sCount">0</b></div>
+<div class="stat-card"><span>Time Per Question</span><b id="tCount">Unrestricted</b></div>
+<div class="stat-card"><span>Evaluations Logged</span><b id="rCount">0</b></div>
+</div>
+</div>
+
+<div class="card">
+<h2><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM8.5 12h7M8.5 16h5"/></svg> Evaluation Metrics & Submissions</h2>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0 14px">
+<button id="archiveBtn" style="margin:0">Start New Quiz (Archive Results)</button>
+<button id="printBtn" style="margin:0">Print Results</button>
+<button id="removeArchiveBtn" style="margin:0">Remove Archived Results</button>
+<select id="viewSel" style="font:inherit;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border-color);background:#fafbff;color:var(--text-main);max-width:100%"><option value="current">Current quiz results</option></select>
+</div>
+<div class="scroll">
+<table>
+<thead><tr><th>Username</th><th>Achieved Score</th><th>Total Items</th><th>Timestamp</th></tr></thead>
+<tbody id="resultsBody"></tbody>
+</table>
+</div>
+</div>
 </main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, addDoc, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = { apiKey:"AIzaSyCOQ-jq_ObgDWiD8C8v_HX2IxJ1FYOSe9Y", authDomain:"mirs-ai.firebaseapp.com", projectId:"mirs-ai", storageBucket:"mirs-ai.firebasestorage.app", messagingSenderId:"478184601355", appId:"1:478184601355:web:85f99d485db2e12860940e" };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const firebaseConfig = {
+apiKey: "AIzaSyAILJ3P6b_mAU2E4y9Rkydgc_hqQyzXGdQ",
+authDomain: "mirs-07.firebaseapp.com",
+projectId: "mirs-07",
+storageBucket: "mirs-07.firebasestorage.app",
+messagingSenderId: "671777127943",
+appId: "1:671777127943:web:23c882d4e92e87ca5e34a2"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const auth = getAuth(fbApp);
 
-// Update Stats and Table
-async function updateStats() {
-  try {
-    const testId = document.getElementById('testIdInput').value.trim();
-    if (!testId) {
-      document.getElementById('statQ').textContent = "0";
-      document.getElementById('statU').textContent = "0";
-      document.getElementById('statT').textContent = "0";
-      document.getElementById('resultsTable').innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b;">Enter a Test Name to see results.</td></tr>`;
-      return;
-    }
-    const qSnap = await getDocs(collection(db, "tests", testId, "questions"));
-    document.getElementById('statQ').textContent = qSnap.size;
-    const uSnap = await getDocs(collection(db, "tests", testId, "participants"));
-    document.getElementById('statU').textContent = uSnap.size;
+const $ = id => document.getElementById(id);
+const msg = (t, bad = false) => { $('mainMsg').textContent = t; $('mainMsg').className = "status" + (bad ? " bad" : ""); };
 
-    // Load Results
-    const aSnap = await getDocs(collection(db, "tests", testId, "attempts"));
-    document.getElementById('statT').textContent = aSnap.size;
-
-    if (aSnap.empty) {
-      document.getElementById('resultsTable').innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b;">No submissions yet for this test.</td></tr>`;
-      return;
-    }
-
-    let rows = "";
-    aSnap.forEach(d => {
-      const data = d.data();
-      const dateStr = data.finishedAt ? new Date(data.finishedAt).toLocaleString() : "N/A";
-      rows += `<tr>
-        <td>${data.username || "Unknown"}</td>
-        <td>${data.score || 0}</td>
-        <td>${data.total || 0}</td>
-        <td>${dateStr}</td>
-      </tr>`;
-    });
-    document.getElementById('resultsTable').innerHTML = rows;
-
-  } catch (e) { console.log(e); }
+function readFile(file) {
+return new Promise((ok, no) => {
+if (!file) return no(Error("Error: Please attach a valid data document."));
+const r = new FileReader();
+r.onload = e => {
+try {
+const w = XLSX.read(e.target.result, { type: "array" });
+ok(XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]], { defval: "" }));
+} catch (err) { no(err); }
+};
+r.onerror = () => no(Error("Error: Failed to parse file stream."));
+r.readAsArrayBuffer(file);
+});
 }
 
-// Update stats when test name is typed
-document.getElementById('testIdInput').addEventListener('input', updateStats);
+function val(row, ...names) {
+for (const n of names) {
+const k = Object.keys(row).find(k => k.toLowerCase().replace(/[ _-]/g, "") === n.toLowerCase().replace(/[ _-]/g, ""));
+if (k !== undefined) return row[k];
+}
+return "";
+}
 
-// Upload Questions
-document.getElementById('questionsBtn').onclick = async () => {
-  const fileInput = document.getElementById('questionsFile');
-  const testId = document.getElementById('testIdInput').value.trim();
-  
-  if (!testId) return alert("Please enter a Test Name first! (e.g., Class10_Physics)");
-  if (!fileInput.files.length) return alert("Please choose a file!");
+async function clearAttempts() {
+const snap = await getDocs(collection(db, 'attempts'));
+const refs = snap.docs.map(d => d.ref);
+for (let i = 0; i < refs.length; i += 400) {
+const batch = writeBatch(db);
+refs.slice(i, i + 400).forEach(r => batch.delete(r));
+await batch.commit();
+}
+}
 
-  const file = fileInput.files[0];
-  const reader = new FileReader();
-  
-  reader.onload = async (e) => {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet);
+async function replaceCollection(name, items) {
+const old = await getDocs(collection(db, name));
+const ops = [];
+old.forEach(d => ops.push({ type: 'del', ref: d.ref }));
+items.forEach(it => ops.push({ type: 'set', ref: doc(db, name, it.id), data: it.data }));
+for (let i = 0; i < ops.length; i += 400) {
+const batch = writeBatch(db);
+ops.slice(i, i + 400).forEach(o => o.type === 'del' ? batch.delete(o.ref) : batch.set(o.ref, o.data));
+await batch.commit();
+}
+}
 
-      const testRef = doc(db, "tests", testId);
-      await setDoc(testRef, { createdAt: new Date(), active: true }, { merge: true });
+$('questionsBtn').onclick = async () => {
+try {
+msg("Uploading questions...");
+const rows = await readFile($('questionsFile').files[0]);
+const questions = rows.map(r => ({
+question: String(val(r, "Question", "question_text")).trim(),
+options: ["OptionA", "OptionB", "OptionC", "OptionD"].map(n => String(val(r, n, n.toLowerCase())).trim()),
+correct: String(val(r, "CorrectAnswer", "correct_answer", "Correct")).trim().toUpperCase()
+})).filter(q => q.question);
 
-      for (const row of json) {
-        await addDoc(collection(db, "tests", testId, "questions"), {
-          q: row.Question,
-          opt1: row.Option1,
-          opt2: row.Option2,
-          opt3: row.Option3,
-          opt4: row.Option4,
-          answer: row.Answer,
-          order: row.Order || 0
-        });
-      }
-      alert(`Successfully uploaded ${json.length} questions for Test: ${testId}`);
-      updateStats();
-    } catch (err) { alert("Error: " + err.message); }
-  };
-  reader.readAsArrayBuffer(file);
+await replaceCollection('questions', questions.map((q, i) => ({
+id: String(i).padStart(4, '0'),
+data: { ...q, order: i }
+})));
+await clearAttempts();
+msg("Success: Successfully indexed " + questions.length + " assessment items.");
+refresh();
+} catch (e) {
+msg(e.message, true);
+}
 };
 
-// Upload Participants
-document.getElementById('studentsBtn').onclick = async () => {
-  const fileInput = document.getElementById('studentsFile');
-  const testId = document.getElementById('testIdParticipants').value.trim();
+$('studentsBtn').onclick = async () => {
+try {
+msg("Uploading students...");
+const rows = await readFile($('studentsFile').files[0]);
+const students = rows.map(r => ({
+username: String(val(r, "Username")).trim(),
+password: String(val(r, "Password")).trim()
+})).filter(s => s.username);
 
-  if (!testId) return alert("Please enter a Test Name first!");
-  if (!fileInput.files.length) return alert("Please choose a file!");
-
-  const file = fileInput.files[0];
-  const reader = new FileReader();
-  
-  reader.onload = async (e) => {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet);
-
-      const testRef = doc(db, "tests", testId);
-      await setDoc(testRef, { createdAt: new Date(), active: true }, { merge: true });
-
-      for (const row of json) {
-        await addDoc(collection(db, "tests", testId, "participants"), {
-          username: String(row.Username || row.username || "").toLowerCase().trim(),
-          password: String(row.Password || row.password || "").trim(),
-          name: String(row.Name || row.name || "")
-        });
-      }
-      alert(`Successfully uploaded ${json.length} participants for Test: ${testId}`);
-      updateStats();
-    } catch (err) { alert("Error: " + err.message); }
-  };
-  reader.readAsArrayBuffer(file);
+await replaceCollection('participants', students.map(s => ({
+id: encodeURIComponent(s.username.toLowerCase()),
+data: s
+})));
+msg("Success: Successfully registered " + students.length + " candidate credentials.");
+refresh();
+} catch (e) {
+msg(e.message, true);
+}
 };
 
-// Save Timer
-document.getElementById('timerBtn').onclick = async () => {
-  const testId = document.getElementById('testIdInput').value.trim();
-  if (!testId) return alert("Please enter a Test Name first!");
-  
-  const m = parseInt(document.getElementById('timerMins').value) || 0;
-  const s = parseInt(document.getElementById('timerSecs').value) || 0;
-  const totalSeconds = (m * 60) + s;
-  
-  try {
-    await setDoc(doc(db, "tests", testId), { totalSeconds: totalSeconds }, { merge: true });
-    alert(`Timer set to ${totalSeconds} seconds for Test: ${testId}`);
-  } catch (e) { alert("Error: " + e.message); }
+$('timerBtn').onclick = async () => {
+try {
+const mins = parseInt($('timerMins').value) || 0;
+const secs = parseInt($('timerSecs').value) || 0;
+const totalSeconds = (mins * 60) + secs;
+
+await setDoc(doc(db, 'settings', 'timer'), { totalSeconds });
+if (totalSeconds > 0) {
+msg("Success: Per-question time configured to " + mins + "m " + secs + "s.");
+} else {
+msg("Success: Per-question time limit removed (Unrestricted mode).");
+}
+refresh();
+} catch (e) {
+msg(e.message, true);
+}
 };
+
+let lastStatus = '';
+async function syncStatus(q, p) {
+const key = q + '/' + p;
+if (key === lastStatus) return;
+try {
+await setDoc(doc(db, 'settings', 'status'), { questions: q, participants: p });
+lastStatus = key;
+} catch (e) { /* ignore */ }
+}
+
+async function refresh() {
+try {
+const [qSnap, pSnap, rSnap, tSnap, aSnap] = await Promise.all([
+getDocs(collection(db, 'questions')),
+getDocs(collection(db, 'participants')),
+getDocs(collection(db, 'results')),
+getDoc(doc(db, 'settings', 'timer')),
+getDocs(collection(db, 'archives'))
+]);
+const results = rSnap.docs.map(d => d.data())
+.sort((a, b) => String(b.finishedAt || '').localeCompare(String(a.finishedAt || '')));
+const totalSeconds = tSnap.exists() ? (tSnap.data().totalSeconds || 0) : 0;
+await syncStatus(qSnap.size, pSnap.size);
+
+$('qCount').textContent = qSnap.size;
+$('sCount').textContent = pSnap.size;
+
+if (totalSeconds > 0) {
+const m = Math.floor(totalSeconds / 60);
+const s = totalSeconds % 60;
+$('tCount').textContent = m + "m " + s + "s";
+$('timerMins').value = m;
+$('timerSecs').value = s;
+} else {
+$('tCount').textContent = "Unrestricted";
+}
+
+$('rCount').textContent = results.length;
+
+const body = $('resultsBody');
+body.replaceChildren();
+
+const archives = aSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+.sort((x, y) => String(y.archivedAt || '').localeCompare(String(x.archivedAt || '')));
+const sel = $('viewSel');
+const keep = sel.value || 'current';
+sel.replaceChildren();
+const cur = document.createElement('option'); cur.value = 'current'; cur.textContent = 'Current quiz results'; sel.append(cur);
+archives.forEach(x => {
+const o = document.createElement('option');
+o.value = x.id;
+o.textContent = 'Archived: ' + x.name + ' (' + new Date(x.archivedAt).toLocaleDateString() + ')';
+sel.append(o);
+});
+sel.value = (keep === 'current' || archives.some(x => x.id === keep)) ? keep : 'current';
+const shown = sel.value === 'current' ? results
+: (archives.find(x => x.id === sel.value).results || [])
+.slice().sort((x, y) => String(y.finishedAt || '').localeCompare(String(x.finishedAt || '')));
+
+shown.forEach(v => {
+const tr = document.createElement('tr');
+[v.username, v.score, v.total, v.finishedAt ? new Date(v.finishedAt).toLocaleString() : ''].forEach(x => {
+const td = document.createElement('td');
+td.textContent = x;
+tr.append(td);
+});
+body.append(tr);
+});
+
+if (!body.children.length) {
+body.innerHTML = "<tr><td colspan='4' style='text-align:center; color:var(--text-muted);'>No evaluation metrics logged yet.</td></tr>";
+}
+} catch (e) {
+msg("Database error: " + e.message, true);
+}
+}
+
+$('viewSel').onchange = refresh;
+
+async function clearCollection(name) {
+const snap = await getDocs(collection(db, name));
+const refs = snap.docs.map(d => d.ref);
+for (let i = 0; i < refs.length; i += 400) {
+const batch = writeBatch(db);
+refs.slice(i, i + 400).forEach(r => batch.delete(r));
+await batch.commit();
+}
+}
+
+$('clearQBtn').onclick = async () => {
+if (!confirm("Remove ALL uploaded questions? Students will not be able to start a quiz until you upload new questions. Results are not deleted.")) return;
+try {
+msg("Removing questions...");
+await clearCollection('questions');
+await clearAttempts();
+$('questionsFile').value = '';
+msg("Success: All questions removed.");
+refresh();
+} catch (e) {
+msg(e.message, true);
+}
+};
+
+$('clearPBtn').onclick = async () => {
+if (!confirm("Remove ALL participants? Nobody will be able to log in until you import participants again. Results are not deleted.")) return;
+try {
+msg("Removing participants...");
+await clearCollection('participants');
+await clearAttempts();
+$('studentsFile').value = '';
+msg("Success: All participants removed.");
+refresh();
+} catch (e) {
+msg(e.message, true);
+}
+};
+
+$('printBtn').onclick = () => {
+const rows = [...$('resultsBody').querySelectorAll('tr')].filter(tr => tr.children.length === 4);
+if (!rows.length) { msg("There are no results to print.", true); return; }
+const esc = t => String(t).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+const sel = $('viewSel');
+const label = sel.options[sel.selectedIndex].textContent;
+const body = rows.map(tr => '<tr>' + [...tr.children].map(td => '<td>' + esc(td.textContent) + '</td>').join('') + '</tr>').join('');
+const w = window.open('', '_blank');
+if (!w) { msg("Please allow pop-ups for this page, then click Print Results again.", true); return; }
+w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>MIRS Quiz Desk - Results</title>'
++ '<style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px;color:#111}h1{margin:0 0 4px;font-size:22px}p{margin:0 0 16px;color:#444}'
++ 'table{width:100%;border-collapse:collapse}th,td{border:1px solid #444;padding:8px 10px;text-align:left;font-size:14px}th{background:#eee}</style></head><body>'
++ '<h1>MIRS Quiz Desk - Results</h1><p>' + esc(label) + '  |  Printed on ' + esc(new Date().toLocaleString()) + '</p>'
++ '<table><thead><tr><th>Username</th><th>Achieved Score</th><th>Total Items</th><th>Timestamp</th></tr></thead><tbody>' + body + '</tbody></table></body></html>');
+w.document.close();
+w.focus();
+w.print();
+};
+
+$('archiveBtn').onclick = async () => {
+try {
+const snap = await getDocs(collection(db, 'results'));
+if (snap.empty) { msg("There are no current results to archive.", true); return; }
+const name = prompt("Enter a name for the quiz you are archiving (e.g. Maths Test 1):");
+if (!name || !name.trim()) return;
+if (!confirm("Archive " + snap.size + " result(s) as \"" + name.trim() + "\" and start a new quiz with an empty results table?")) return;
+
+msg("Archiving results...");
+const results = snap.docs.map(d => d.data());
+await addDoc(collection(db, 'archives'), { name: name.trim(), archivedAt: new Date().toISOString(), results });
+
+const refs = snap.docs.map(d => d.ref);
+for (let i = 0; i < refs.length; i += 400) {
+const batch = writeBatch(db);
+refs.slice(i, i + 400).forEach(r => batch.delete(r));
+await batch.commit();
+}
+await clearAttempts();
+$('viewSel').value = 'current';
+msg("Success: " + results.length + " result(s) archived as \"" + name.trim() + "\". Ready for a new quiz.");
+refresh();
+} catch (e) {
+msg("Archive failed: " + e.message, true);
+}
+};
+
+$('removeArchiveBtn').onclick = async () => {
+try {
+const sel = $('viewSel');
+if (sel.value === 'current') { msg("First choose an archived quiz from the dropdown, then click Remove Archived Results.", true); return; }
+const label = sel.options[sel.selectedIndex].textContent;
+if (!confirm("Permanently delete \"" + label + "\"? This cannot be undone.")) return;
+await deleteDoc(doc(db, 'archives', sel.value));
+sel.value = 'current';
+msg("Archived results removed.");
+refresh();
+} catch (e) {
+msg("Remove failed: " + e.message, title);
+}
+};
+
+$('refreshBtn').onclick = refresh;
+
+const doLogin = async () => {
+try { await signInWithEmailAndPassword(auth, $('admEmail').value.trim(), $('admPass').value); }
+catch (e) { $('admLoginMsg').textContent = 'Login failed. Check email and password.'; }
+};
+$('admLoginBtn').onclick = doLogin;
+$('admPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+onAuthStateChanged(auth, user => {
+if (user) { $('loginOverlay').style.display = 'none'; refresh(); }
+else { $('loginOverlay').style.display = 'flex'; }
+});
 </script>
 </body>
 </html>
